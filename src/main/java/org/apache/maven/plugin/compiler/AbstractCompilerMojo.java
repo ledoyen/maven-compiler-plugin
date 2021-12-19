@@ -22,7 +22,6 @@ package org.apache.maven.plugin.compiler;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -1444,43 +1443,13 @@ public abstract class AbstractCompilerMojo
         return value;
     }
 
-    //TODO remove the part with ToolchainManager lookup once we depend on
-    //3.0.9 (have it as prerequisite). Define as regular component field then.
     protected final Toolchain getToolchain()
     {
         Toolchain tc = null;
-        
         if ( jdkToolchain != null )
-        {
-            // Maven 3.3.1 has plugin execution scoped Toolchain Support
-            try
-            {
-                Method getToolchainsMethod =
-                    toolchainManager.getClass().getMethod( "getToolchains", MavenSession.class, String.class,
-                                                           Map.class );
-
-                @SuppressWarnings( "unchecked" )
-                List<Toolchain> tcs =
-                    (List<Toolchain>) getToolchainsMethod.invoke( toolchainManager, session, "jdk",
-                                                                  jdkToolchain );
-
-                if ( tcs != null && !tcs.isEmpty() )
-                {
-                    tc = tcs.get( 0 );
-                }
-            }
-            catch ( NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException e )
-            {
-                // ignore
-            }
-        }
-        
-        if ( tc == null )
         {
             tc = toolchainManager.getToolchainFromBuildContext( "jdk", session );
         }
-        
         return tc;
     }
 
